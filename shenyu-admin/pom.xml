@@ -89,6 +89,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.shenyu</groupId>
+            <artifactId>shenyu-register-client-server-kubernetes</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <artifactId>grpc-netty</artifactId>
             <groupId>io.grpc</groupId>
         </dependency>

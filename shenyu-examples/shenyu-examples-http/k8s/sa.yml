@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shenyu-configmap-controller
+  namespace: shenyu
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: shenyu-configmap-manager
+  namespace: shenyu
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: shenyu-configmap-manager-binding
+  namespace: shenyu
+subjects:
+  - kind: ServiceAccount
+    name: shenyu-configmap-controller
+    namespace: shenyu
+roleRef:
+  kind: Role
+  name: shenyu-configmap-manager
+  apiGroup: rbac.authorization.k8s.io

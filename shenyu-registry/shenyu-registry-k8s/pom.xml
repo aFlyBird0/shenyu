@@ -19,21 +19,35 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.apache.shenyu</groupId>
-        <artifactId>shenyu-register-center</artifactId>
+        <artifactId>shenyu-registry</artifactId>
         <version>2.6.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>shenyu-register-client-server</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>shenyu-registry-k8s</artifactId>
 
-    <modules>
-        <module>shenyu-register-client-server-api</module>
-        <module>shenyu-register-client-server-zookeeper</module>
-        <module>shenyu-register-client-server-etcd</module>
-        <module>shenyu-register-client-server-consul</module>
-        <module>shenyu-register-client-server-nacos</module>
-        <module>shenyu-register-client-server-apollo</module>
-        <module>shenyu-register-client-server-polaris</module>
-        <module>shenyu-register-client-server-kubernetes</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.shenyu</groupId>
+            <artifactId>shenyu-registry-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-core</artifactId>
+            <version>${grpc.version}</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>grpc-protobuf</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>${grpc.version}</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>grpc-stub</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>${grpc.version}</version>
+        </dependency>
+    </dependencies>
 </project>

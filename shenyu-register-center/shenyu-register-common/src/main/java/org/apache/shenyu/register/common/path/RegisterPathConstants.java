@@ -17,6 +17,15 @@
 
 package org.apache.shenyu.register.common.path;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.shenyu.common.constant.Constants;
+import org.apache.shenyu.common.constant.DefaultPathConstants;
+import org.apache.shenyu.common.enums.RpcTypeEnum;
+import org.apache.shenyu.register.common.dto.MetaDataRegisterDTO;
+import org.apache.shenyu.register.common.dto.URIRegisterDTO;
+
+import static org.apache.shenyu.common.constant.Constants.PATH_SEPARATOR;
+
 /**
  *  register center path constants.
  */
@@ -174,6 +183,105 @@ public class RegisterPathConstants {
      */
     public static String buildNodeName(final String serviceName, final String methodName) {
         return String.join(DOT_SEPARATOR, serviceName, methodName);
+    }
+
+    public static class Kubernetes {
+        public static final String NAMESPACE = "shenyu";
+
+        public static final String LABEL_PREFIX = "shenyu.apache.org/";
+
+        public static final String ANNOTATION_PREFIX = "shenyu.apache.org/";
+
+        public static final String CONFIGMAP_LABEL = LABEL_PREFIX + "register";
+
+        public static final String CONFIGMAP_LABEL_VALUE = "true";
+
+        public static final String CONFIGMAP_DATA_KEY = "data";
+
+        public static final String REGISTER_TYPE_LABEL = LABEL_PREFIX + "register-type";
+
+        public static final String REGISTER_TYPE_LABEL_METADATA_VALUE = "metadata";
+
+        public static final String REGISTER_TYPE_LABEL_URI_VALUE = "uri";
+
+        public static final String REGISTER_TYPE_LABEL_API_DOC_VALUE = "api-doc";
+
+        public static final String RPC_TYPE_LABEL = LABEL_PREFIX + "register-rpc-type";
+
+        public static final String RULE_NAME_ANNOTATION = ANNOTATION_PREFIX + "rule-name";
+
+        public static final String CONTEXT_PATH_ANNOTATION = ANNOTATION_PREFIX + "context-path";
+
+        public static final String REGISTER_IP_PORT_ANNOTATION = ANNOTATION_PREFIX + "ip-port";
+
+        public static final String REGISTER_METADATA_FULL_PATH_ANNOTATION = ANNOTATION_PREFIX + "register-metadata-full-path";
+
+        public static final String REGISTER_URI_FULL_PATH_ANNOTATION = ANNOTATION_PREFIX + "register-uri-full-path";
+
+        public static final String CONFIGMAP_NAME_METADATA_PREFIX = "register-metadata-";
+
+        public static final String CONFIGMAP_NAME_URI_PREFIX = "register-uri-";
+
+        /**
+         * Build uri node name string.
+         * @param registerDTO the register dto
+         * @return the string
+         */
+        public static String buildURINodeName(final URIRegisterDTO registerDTO) {
+            String host = registerDTO.getHost();
+            int port = registerDTO.getPort();
+            return String.join(Constants.COLONS, host, Integer.toString(port));
+        }
+
+        /**
+         * Convert metadata node name to configmap name string.
+         * @param nodeName the metadata node name
+         * @return the string
+         */
+        public static String buildMetaDataConfigMapName(final String nodeName) {
+            return buildConfigMapName(nodeName, REGISTER_METADATA_INSTANCE_ROOT_PATH, Kubernetes.CONFIGMAP_NAME_METADATA_PREFIX);
+        }
+
+        /**
+         * Convert uri node name to configmap name string.
+         * @param nodeName the uri node name
+         * @return the string
+         */
+        public static String buildURIConfigMapName(final String nodeName) {
+            return buildConfigMapName(nodeName, REGISTER_URI_INSTANCE_ROOT_PATH, Kubernetes.CONFIGMAP_NAME_URI_PREFIX);
+        }
+
+        private static String buildConfigMapName(final String fullNodeName, final String parentPath, final String configMapPrefix) {
+            // if realNode has prefix parentPath, such as "/shenyu/register/metadata", remove it
+            String nodeNameWithoutPrefix = fullNodeName.startsWith(parentPath)
+                    ? fullNodeName.substring(parentPath.length())
+                    : fullNodeName;
+
+            // use base16 to encode node name, because kubernetes configmap name follows lowercase RFC 1123
+            String nodeNameBase16 = Hex.encodeHexString(nodeNameWithoutPrefix.getBytes()).toLowerCase();
+
+            // use human-readable prefix to make configmap name more readable
+            return configMapPrefix + nodeNameBase16;
+        }
+
+        /**
+         * Build metadata node name string.
+         * @param metadata the metadata
+         * @return the string
+         */
+        public static String buildMetadataNodeName(final MetaDataRegisterDTO metadata) {
+            String nodeName;
+            String rpcType = metadata.getRpcType();
+            if (RpcTypeEnum.HTTP.getName().equals(rpcType)
+                    || RpcTypeEnum.SPRING_CLOUD.getName().equals(rpcType)) {
+                nodeName = String.join(DefaultPathConstants.SELECTOR_JOIN_RULE,
+                        metadata.getContextPath(),
+                        metadata.getRuleName().replace(PATH_SEPARATOR, DefaultPathConstants.SELECTOR_JOIN_RULE));
+            } else {
+                nodeName = RegisterPathConstants.buildNodeName(metadata.getServiceName(), metadata.getMethodName());
+            }
+            return nodeName.startsWith(PATH_SEPARATOR) ? nodeName.substring(1) : nodeName;
+        }
     }
 
 }
